@@ -55,7 +55,7 @@ import { selectSelectedCampaign, selectCampaignLoading } from '../../state/campa
           <mat-list>
             <mat-list-item *ngFor="let p of c.leaderboard">
               <span matListItemTitle>#{{ p.rank }} {{ p.userName }}</span>
-              <span matListItemLine>{{ p.currentValue }} {{ c.customMetric || c.metricType }} ({{ p.progressPercentage }}%)</span>
+              <span matListItemLine>{{ p.currentValue }} {{ c.customMetric || c.metricType }}<ng-container *ngIf="c.ruleType === 'target'"> ({{ p.progressPercentage }}%)</ng-container></span>
             </mat-list-item>
           </mat-list>
         </mat-card-content>

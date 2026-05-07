@@ -160,7 +160,7 @@ export class CreateCampaignComponent implements OnInit {
     this.rulesForm.get('ruleType')?.valueChanges.subscribe(ruleType => {
       const targetGoalControl = this.rulesForm.get('targetGoal');
       if (ruleType === 'target') {
-        targetGoalControl?.setValidators([Validators.required, Validators.min(0)]);
+        targetGoalControl?.setValidators([Validators.required, Validators.min(1)]);
       } else {
         targetGoalControl?.clearValidators();
         targetGoalControl?.setValue(null);
