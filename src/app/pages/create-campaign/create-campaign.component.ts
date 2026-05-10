@@ -15,6 +15,35 @@ import { CampaignActions } from '../../state/campaigns/campaigns.actions';
 import { Router } from '@angular/router';
 import { Campaign } from '../../models';
 
+type MetricOption = { value: string; label: string };
+
+const METRIC_OPTIONS_BY_TYPE: Record<string, MetricOption[]> = {
+  'weight-loss': [
+    { value: 'kg', label: 'kg (kilograms)' },
+    { value: 'lbs', label: 'lbs (pounds)' }
+  ],
+  'weight-gain': [
+    { value: 'kg', label: 'kg (kilograms)' },
+    { value: 'lbs', label: 'lbs (pounds)' }
+  ],
+  'steps': [
+    { value: 'steps', label: 'steps' }
+  ],
+  'running': [
+    { value: 'km', label: 'km (kilometres)' },
+    { value: 'miles', label: 'miles' }
+  ],
+  'other': [
+    { value: 'kg', label: 'kg (kilograms)' },
+    { value: 'lbs', label: 'lbs (pounds)' },
+    { value: 'steps', label: 'steps' },
+    { value: 'km', label: 'km (kilometres)' },
+    { value: 'miles', label: 'miles' },
+    { value: 'calories', label: 'calories' },
+    { value: 'other', label: 'Other (specify below)' }
+  ]
+};
+
 @Component({
   selector: 'app-create-campaign',
   standalone: true,
@@ -77,13 +106,7 @@ import { Campaign } from '../../models';
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Metric Type</mat-label>
               <mat-select formControlName="metricType">
-                <mat-option value="kg">kg (kilograms)</mat-option>
-                <mat-option value="lbs">lbs (pounds)</mat-option>
-                <mat-option value="steps">steps</mat-option>
-                <mat-option value="km">km (kilometres)</mat-option>
-                <mat-option value="miles">miles</mat-option>
-                <mat-option value="calories">calories</mat-option>
-                <mat-option value="other">Other (specify below)</mat-option>
+                <mat-option *ngFor="let opt of availableMetricOptions" [value]="opt.value">{{ opt.label }}</mat-option>
               </mat-select>
             </mat-form-field>
 
@@ -95,6 +118,15 @@ import { Campaign } from '../../models';
             <mat-form-field *ngIf="rulesForm.get('ruleType')?.value === 'target'" appearance="outline" class="w-100">
               <mat-label>Target Goal</mat-label>
               <input matInput type="number" formControlName="targetGoal">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Winners</mat-label>
+              <mat-select formControlName="winnersCount">
+                <mat-option [value]="1">1 Winner</mat-option>
+                <mat-option [value]="2">2 Winners (Winner + Runner-up)</mat-option>
+                <mat-option [value]="3">3 Winners (Winner + Runner-up + 3rd Place)</mat-option>
+              </mat-select>
             </mat-form-field>
 
             <div>
@@ -109,13 +141,13 @@ import { Campaign } from '../../models';
             <ng-template matStepLabel>Step 3: Settings</ng-template>
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Start Date</mat-label>
-              <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+              <input matInput [matDatepicker]="startPicker" formControlName="startDate" [min]="minStartDate">
               <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
               <mat-datepicker #startPicker></mat-datepicker>
             </mat-form-field>
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>End Date</mat-label>
-              <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+              <input matInput [matDatepicker]="endPicker" formControlName="endDate" [min]="selectedStartDate" [max]="maxEndDate">
               <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
               <mat-datepicker #endPicker></mat-datepicker>
             </mat-form-field>
@@ -137,6 +169,12 @@ export class CreateCampaignComponent implements OnInit {
   private store = inject(Store);
   private router = inject(Router);
 
+  minStartDate = new Date();
+  selectedStartDate = new Date();
+  maxEndDate = this.computeMaxEndDate(new Date());
+
+  availableMetricOptions: MetricOption[] = METRIC_OPTIONS_BY_TYPE['weight-loss'];
+
   infoForm = this.fb.group({
     name: ['', Validators.required],
     description: [''],
@@ -147,16 +185,23 @@ export class CreateCampaignComponent implements OnInit {
     ruleType: ['target', Validators.required],
     metricType: ['kg', Validators.required],
     customMetric: [''],
-    targetGoal: [null as number | null]
+    targetGoal: [null as number | null],
+    winnersCount: [1, Validators.required]
   });
 
   settingsForm = this.fb.group({
-    startDate: [new Date()],
-    endDate: [new Date()],
+    startDate: [new Date(), Validators.required],
+    endDate: [new Date(), Validators.required],
     isPublic: [true]
   });
 
   ngOnInit() {
+    this.infoForm.get('type')?.valueChanges.subscribe(type => {
+      const options = METRIC_OPTIONS_BY_TYPE[type ?? 'other'] ?? METRIC_OPTIONS_BY_TYPE['other'];
+      this.availableMetricOptions = options;
+      this.rulesForm.get('metricType')?.setValue(options[0].value);
+    });
+
     this.rulesForm.get('ruleType')?.valueChanges.subscribe(ruleType => {
       const targetGoalControl = this.rulesForm.get('targetGoal');
       if (ruleType === 'target') {
@@ -178,6 +223,24 @@ export class CreateCampaignComponent implements OnInit {
       }
       customMetricControl?.updateValueAndValidity();
     });
+
+    this.settingsForm.get('startDate')?.valueChanges.subscribe(startDate => {
+      if (!startDate) return;
+      const date = startDate instanceof Date ? startDate : new Date(startDate);
+      if (isNaN(date.getTime())) return;
+      this.selectedStartDate = date;
+      this.maxEndDate = this.computeMaxEndDate(date);
+      const endDate = this.settingsForm.get('endDate')?.value;
+      if (endDate && new Date(endDate) > this.maxEndDate) {
+        this.settingsForm.get('endDate')?.setValue(this.maxEndDate);
+      }
+    });
+  }
+
+  private computeMaxEndDate(from: Date): Date {
+    const max = new Date(from);
+    max.setMonth(max.getMonth() + 3);
+    return max;
   }
 
   onCreate() {
@@ -196,6 +259,7 @@ export class CreateCampaignComponent implements OnInit {
         metricType: (campaignValue.metricType as any) || 'other',
         customMetric: campaignValue.customMetric || undefined,
         targetGoal: campaignValue.targetGoal ?? undefined,
+        winnersCount: (campaignValue.winnersCount as 1 | 2 | 3) ?? 1,
         startDate: campaignValue.startDate || new Date(),
         endDate: campaignValue.endDate || new Date(),
         isPublic: !!campaignValue.isPublic
