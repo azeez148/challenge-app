@@ -225,7 +225,9 @@ export class CreateCampaignComponent implements OnInit {
     });
 
     this.settingsForm.get('startDate')?.valueChanges.subscribe(startDate => {
-      const date = startDate instanceof Date ? startDate : new Date(startDate ?? '');
+      if (!startDate) return;
+      const date = startDate instanceof Date ? startDate : new Date(startDate);
+      if (isNaN(date.getTime())) return;
       this.selectedStartDate = date;
       this.maxEndDate = this.computeMaxEndDate(date);
       const endDate = this.settingsForm.get('endDate')?.value;
