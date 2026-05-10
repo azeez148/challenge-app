@@ -15,9 +15,11 @@ export interface Campaign {
   hostId: string;
   hostName: string;
   status: 'upcoming' | 'in-progress' | 'past' | 'cancelled';
-  type: 'weight-loss' | 'steps' | 'running' | 'other';
-  metricType: 'kg' | 'steps' | 'km';
-  targetGoal: number;
+  type: 'weight-loss' | 'weight-gain' | 'steps' | 'running' | 'other';
+  metricType: 'kg' | 'lbs' | 'steps' | 'km' | 'miles' | 'calories' | 'other';
+  customMetric?: string;
+  ruleType: 'target' | 'most' | 'least';
+  targetGoal?: number;
   startDate: Date;
   endDate: Date;
   isPublic: boolean;

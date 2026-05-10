@@ -27,7 +27,14 @@ import { selectSelectedCampaign, selectCampaignLoading } from '../../state/campa
           <p>{{ c.description }}</p>
           <div class="row mt-3">
             <div class="col-6">
-              <p class="mb-0"><strong>🎯 Goal:</strong> {{ c.targetGoal }} {{ c.metricType }}</p>
+              <p class="mb-0">
+                <strong>🎯 Goal:</strong>
+                <ng-container [ngSwitch]="c.ruleType">
+                  <span *ngSwitchCase="'most'">Most {{ c.customMetric || c.metricType }}</span>
+                  <span *ngSwitchCase="'least'">Least {{ c.customMetric || c.metricType }}</span>
+                  <span *ngSwitchDefault>{{ c.targetGoal }} {{ c.customMetric || c.metricType }}</span>
+                </ng-container>
+              </p>
             </div>
             <div class="col-6">
               <p class="mb-0"><strong>⏱ Duration:</strong> 30 days</p>
@@ -48,7 +55,7 @@ import { selectSelectedCampaign, selectCampaignLoading } from '../../state/campa
           <mat-list>
             <mat-list-item *ngFor="let p of c.leaderboard">
               <span matListItemTitle>#{{ p.rank }} {{ p.userName }}</span>
-              <span matListItemLine>{{ p.currentValue }} {{ c.metricType }} ({{ p.progressPercentage }}%)</span>
+              <span matListItemLine>{{ p.currentValue }} {{ c.customMetric || c.metricType }}<ng-container *ngIf="c.ruleType === 'target'"> ({{ p.progressPercentage }}%)</ng-container></span>
             </mat-list-item>
           </mat-list>
         </mat-card-content>
