@@ -23,3 +23,8 @@ export const selectAuthError = createSelector(
   selectAuthState,
   (state) => state.error
 );
+
+export const selectIsAdmin = createSelector(
+  selectUser,
+  (user) => user?.role === 'admin'
+);

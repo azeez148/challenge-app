@@ -64,6 +64,22 @@ export class MockDataService {
       endDate: new Date('2024-05-31'),
       isPublic: true,
       participantsCount: 50
+    },
+    {
+      id: 'c4',
+      title: 'Calorie Burn Challenge',
+      description: 'Burn the most calories in a month.',
+      hostId: '3',
+      hostName: 'User A',
+      status: 'past',
+      type: 'other',
+      metricType: 'calories',
+      ruleType: 'most',
+      winnersCount: 3,
+      startDate: new Date('2023-01-01'),
+      endDate: new Date('2023-01-31'),
+      isPublic: true,
+      participantsCount: 95
     }
   ];
 
@@ -92,6 +108,10 @@ export class MockDataService {
 
   getHostedCampaigns(): Observable<Campaign[]> {
     return of([this.campaigns[0], this.campaigns[2]]).pipe(delay(500));
+  }
+
+  getUsers(): Observable<User[]> {
+    return of(this.users).pipe(delay(500));
   }
 
   login(email: string, password: string): Observable<User> {

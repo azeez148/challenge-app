@@ -28,3 +28,18 @@ export const selectCampaignLoading = createSelector(
   selectCampaignState,
   (state) => state.loading
 );
+
+export const selectInProgressCampaigns = createSelector(
+  selectExploreCampaigns,
+  (campaigns) => campaigns.filter(c => c.status === 'in-progress')
+);
+
+export const selectUpcomingCampaigns = createSelector(
+  selectExploreCampaigns,
+  (campaigns) => campaigns.filter(c => c.status === 'upcoming')
+);
+
+export const selectPastCampaigns = createSelector(
+  selectExploreCampaigns,
+  (campaigns) => campaigns.filter(c => c.status === 'past')
+);

@@ -11,6 +11,12 @@ import { CampaignListComponent } from './pages/campaign-list/campaign-list.compo
 import { MessagingComponent } from './pages/messaging/messaging.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
+import { InProgressCampaignsComponent } from './pages/in-progress-campaigns/in-progress-campaigns.component';
+import { FutureCampaignsComponent } from './pages/future-campaigns/future-campaigns.component';
+import { PastCampaignsComponent } from './pages/past-campaigns/past-campaigns.component';
+import { UsersComponent } from './pages/users/users.component';
+import { AboutComponent } from './pages/about/about.component';
+import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -22,7 +28,12 @@ export const routes: Routes = [
   { path: 'create-campaign', component: CreateCampaignComponent },
   { path: 'host-dashboard', component: HostDashboardComponent },
   { path: 'profile', component: ProfileComponent },
-  { path: 'admin', component: AdminComponent },
+  { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
   { path: 'explore', component: CampaignListComponent },
   { path: 'messaging', component: MessagingComponent },
+  { path: 'campaigns/in-progress', component: InProgressCampaignsComponent },
+  { path: 'campaigns/future', component: FutureCampaignsComponent },
+  { path: 'campaigns/past', component: PastCampaignsComponent },
+  { path: 'users', component: UsersComponent, canActivate: [adminGuard] },
+  { path: 'about', component: AboutComponent },
 ];
