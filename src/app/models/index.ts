@@ -19,6 +19,7 @@ export interface Campaign {
   metricType: 'kg' | 'lbs' | 'steps' | 'km' | 'miles' | 'calories' | 'other';
   customMetric?: string;
   ruleType: 'target' | 'most' | 'least';
+  winnersCount: 1 | 2 | 3;
   targetGoal?: number;
   startDate: Date;
   endDate: Date;
